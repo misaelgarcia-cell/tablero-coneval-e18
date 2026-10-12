@@ -8,10 +8,10 @@
 <style>
   :root{
     --bg:#f4f6f9; --card:#ffffff; --ink:#1f2933; --muted:#5f6b7a; --line:#e3e7ed;
-    --c1:#1f4e79; --c2:#c0392b; --c3:#7f8c8d; --accent:#e67e22;
+    --c1:#7B1E3C; --c2:#3E6A8A; --c3:#8A9BA8; --accent:#D4A24C;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--ink)}
   header{background:var(--c1);color:#fff;padding:22px 24px}
   header h1{margin:0 0 4px;font-size:1.5rem}
   header p{margin:0;opacity:.85;font-size:.92rem}
@@ -27,7 +27,7 @@
   .card.wide{grid-column:1 / -1}
   .card h2{font-size:1rem;margin:0 0 2px}
   .card .q{font-size:.82rem;color:var(--muted);margin:0 0 8px}
-  .chart{width:100%;height:340px}
+  .chart{width:100%;height:380px}
   .geo-wrap{display:grid;grid-template-columns:3fr 2fr;gap:16px;align-items:center}
   #geo{height:380px}
   footer{max-width:1280px;margin:0 auto;padding:0 16px 28px;font-size:.8rem;color:var(--muted)}
@@ -93,78 +93,74 @@
 google.charts.load('current', {packages:['corechart','geochart','table'], language:'es'});
 google.charts.setOnLoadCallback(drawAll);
 
-const C1='#1f4e79', C2='#c0392b', C3='#95a5a6', C4='#e67e22';
-const base = {fontName:'Segoe UI', chartArea:{left:60,right:20,top:30,bottom:50}, legend:{position:'bottom'}};
+const M='#7B1E3C', G='#D4A24C', S='#8A9BA8', B='#3E6A8A';
+const base = {fontName:'Arial', titleTextStyle:{fontSize:13,bold:true}, legend:{position:'top',maxLines:2,textStyle:{fontSize:11}}};
 
 function drawAll(){
   // 1. ComboChart: millones (columnas) + porcentaje (líneas)
   const d1 = google.visualization.arrayToDataTable([
-    ['Año','Pobreza (millones)','Pobreza extrema (millones)','% pobreza','% pobreza extrema'],
+    ['Año','Pobreza (M)','Extrema (M)','Pobreza (%)','Extrema (%)'],
     ['2008', 49.5, 12.3, 44.4, 11.0],
     ['2018', 52.4,  9.3, 41.9,  7.4]
   ]);
   new google.visualization.ComboChart(document.getElementById('combo')).draw(d1, Object.assign({}, base, {
-    seriesType:'bars',
-    series:{0:{color:C1},1:{color:C2},2:{type:'line',targetAxisIndex:1,color:C1,lineDashStyle:[4,4],pointSize:7},
-            3:{type:'line',targetAxisIndex:1,color:C2,lineDashStyle:[4,4],pointSize:7}},
-    vAxes:{0:{title:'Millones de personas',minValue:0},1:{title:'% de la población',minValue:0,maxValue:50}},
-    chartArea:{left:60,right:60,top:50,bottom:40},
-    legend:{position:'top',maxLines:2,textStyle:{fontSize:11}}
+    title:'Personas en pobreza y pobreza extrema, 2008 vs 2018 (M = millones de personas)',
+    seriesType:'bars', colors:[M,G,B,S],
+    series:{2:{type:'line',targetAxisIndex:1,pointSize:6},3:{type:'line',targetAxisIndex:1,pointSize:6}},
+    vAxes:{0:{title:'Millones de personas',viewWindow:{min:0,max:60}},1:{title:'% de la población',viewWindow:{min:0,max:60}}},
+    chartArea:{left:60,right:60,top:60,bottom:40}
   }));
 
-  // 2. Donut
+  // 2. Anillo
   const d2 = google.visualization.arrayToDataTable([
     ['Condición','% de la población'],
     ['Pobreza extrema',7.4],['Pobreza moderada',34.5],['Población no pobre',58.1]
   ]);
   new google.visualization.PieChart(document.getElementById('donut')).draw(d2, Object.assign({}, base, {
-    pieHole:0.5, colors:[C2,C4,C1], pieSliceText:'percentage',
-    chartArea:{left:20,right:20,top:20,bottom:40}, legend:{position:'right'}
+    title:'Composición de la población según condición de pobreza, 2018',
+    pieHole:0.45, colors:[M,G,S], pieSliceText:'percentage',
+    chartArea:{left:20,right:20,top:40,bottom:20}, legend:{position:'right',textStyle:{fontSize:11}}
   }));
 
-  // 3. Barras horizontales
+  // 3. Barras horizontales (ordenadas de mayor a menor según 2008)
   const d3 = google.visualization.arrayToDataTable([
     ['Carencia social','2008','2018'],
-    ['Seguridad social',65.0,57.3],
-    ['Acceso a la alimentación',21.7,20.4],
+    ['Acceso a la seguridad social',65.0,57.3],
+    ['Acceso a los servicios de salud',38.4,16.2],
     ['Servicios básicos en la vivienda',22.9,19.8],
     ['Rezago educativo',21.9,16.9],
-    ['Servicios de salud',38.4,16.2],
+    ['Acceso a la alimentación',21.7,20.4],
     ['Calidad y espacios de la vivienda',17.7,11.1]
   ]);
   new google.visualization.BarChart(document.getElementById('bars')).draw(d3, Object.assign({}, base, {
-    colors:[C3,C1], hAxis:{title:'% de la población',minValue:0},
-    chartArea:{left:190,right:20,top:20,bottom:60}
+    title:'Porcentaje de la población con carencias sociales, 2008 vs 2018',
+    colors:[S,M], hAxis:{title:'% de la población',viewWindow:{min:0,max:70}},
+    chartArea:{left:200,right:20,top:60,bottom:50}
   }));
 
-  // 4. Slope chart (LineChart con 2 puntos)
+  // 4. Slope chart (LineChart con 2 puntos por serie)
   const d4 = google.visualization.arrayToDataTable([
     ['Año','Hablantes de lengua indígena','Zonas rurales','Menores de 18 años','65 años o más','Mujeres','Hombres','Zonas urbanas'],
     ['2008',76.0,62.5,53.3,44.9,44.6,44.0,38.9],
     ['2018',74.9,55.3,49.6,41.1,42.4,41.4,37.6]
   ]);
   new google.visualization.LineChart(document.getElementById('slope')).draw(d4, Object.assign({}, base, {
-    pointSize:7, lineWidth:3,
-    colors:[C2,C4,'#8e44ad','#16a085','#d35400','#2980b9',C3],
-    vAxis:{title:'% en pobreza',viewWindow:{min:30,max:80}},
+    title:'Porcentaje de población en pobreza por grupo, 2008 → 2018',
+    pointSize:6, lineWidth:2,
+    colors:[M,'#B5652B',G,B,'#9B59B6','#4E8A4E',S],
+    vAxis:{title:'% en pobreza',viewWindow:{min:0,max:80}},
     legend:{position:'right',textStyle:{fontSize:11}},
-    chartArea:{left:60,right:170,top:20,bottom:40}
+    chartArea:{left:60,right:170,top:40,bottom:40}
   }));
 
   // 5. GeoChart + Table
-  const d5 = google.visualization.arrayToDataTable([
-    ['Entidad','Nombre','% en pobreza 2018'],
-    ['MX-CHP','Chiapas',76.4],['MX-GRO','Guerrero',66.5],['MX-OAX','Oaxaca',66.4],['MX-VER','Veracruz',61.8]
-  ]);
+  const d5 = [['MX-CHP','Chiapas',76.4],['MX-GRO','Guerrero',66.5],['MX-OAX','Oaxaca',66.4],['MX-VER','Veracruz',61.8]];
   const geoData = new google.visualization.DataTable();
   geoData.addColumn('string','Entidad'); geoData.addColumn('number','% en pobreza 2018');
-  geoData.addColumn({type:'string',role:'tooltip'});
-  for(let r=0;r<d5.getNumberOfRows();r++){
-    geoData.addRow([{v:d5.getValue(r,0),f:d5.getValue(r,1)}, d5.getValue(r,2), d5.getValue(r,1)+': '+d5.getValue(r,2)+' %']);
-  }
+  d5.forEach(r=>geoData.addRow([{v:r[0],f:r[1]}, r[2]]));
   new google.visualization.GeoChart(document.getElementById('geo')).draw(geoData, {
-    region:'MX', resolution:'provinces', colorAxis:{colors:['#f5cba7',C2]},
-    datalessRegionColor:'#e8ecf1', defaultColor:'#e8ecf1', legend:{numberFormat:'#.#\'%\''}
+    region:'MX', resolution:'provinces', colorAxis:{minValue:60,maxValue:78,colors:['#E8C9A0',M]},
+    datalessRegionColor:'#e6e8eb', defaultColor:'#e6e8eb'
   });
 
   const t = google.visualization.arrayToDataTable([
@@ -176,7 +172,7 @@ function drawAll(){
   for(let r=0;r<t.getNumberOfRows();r++){
     const v=t.getValue(r,3);
     t.setFormattedValue(r,3,(v>0?'+':'')+v.toFixed(1));
-    t.setProperty(r,3,'style','color:'+(v>0?'#c0392b':'#1e8449')+';font-weight:600');
+    t.setProperty(r,3,'style','color:'+(v>0?'#7B1E3C':'#2e7d32')+';font-weight:600');
   }
   new google.visualization.Table(document.getElementById('table')).draw(t,{width:'100%',allowHtml:true,sortColumn:2,sortAscending:false});
 }
